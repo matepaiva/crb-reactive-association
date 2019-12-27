@@ -1,0 +1,17 @@
+{
+    "name": "matepaiva/crb-reactive-association",
+    "description": "A class that makes two way data binding between two Carbon Fields Associations",
+    "type": "vcs",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matheus Paiva",
+            "email": "mmccpp@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "CrbReactiveAssociation\\": "src/"
+        }
+    }
+}
