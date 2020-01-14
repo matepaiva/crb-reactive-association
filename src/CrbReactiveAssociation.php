@@ -57,7 +57,7 @@ class CrbReactiveAssociation
       $containers = $this->getOrCreateReactiveContainersByAssociationField($associationField);
 
       foreach ($containers as $container) {
-        $reactive_field = ReactiveField::make($field, $associationField->get_base_name());
+        $reactive_field = ReactiveField::make($field, $associationField->get_base_name(), $container->getType(), $container->getSubtype());
         $container->addField($reactive_field);
       }
     }

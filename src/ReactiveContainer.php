@@ -43,6 +43,14 @@ class ReactiveContainer
     }
   }
 
+  public function getType() {
+    return $this->type;
+  }
+
+  public function getSubtype() {
+    return $this->subtype;
+  }
+
   public static function getFromAssociationField(Association_Field $field)
   {
     $types = $field->get_types();

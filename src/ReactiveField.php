@@ -9,15 +9,17 @@ class ReactiveField
   private $react_to_name = '';
   private $field;
 
-  public function __construct(Association_Field $field, String $react_to_name)
+  public function __construct(Association_Field $field, String $react_to_name, String $type, ?String $subtype)
   {
     $this->field = clone $field;
     $this->react_to_name = $react_to_name;
+    $this->type = $type;
+    $this->subtype = $subtype ?? $type;
   }
 
-  public static function make(Association_Field $field, String $react_to_name)
+  public static function make(Association_Field $field, String $react_to_name, String $type, ?String $subtype)
   {
-    return new Self($field, $react_to_name);
+    return new Self($field, $react_to_name, $type, $subtype);
   }
 
   public function getCrbField()
@@ -125,8 +127,8 @@ class ReactiveField
 
     $groups = Self::group_by(array_merge($to_add, $to_remove), 'subtype');
     foreach ($groups as $group) {
-      ['type' => $type, 'subtype' => $subtype, 'ids' => $ids] = $group;
-      $this->updateReactiveFields($type, $subtype, $ids);
+      ['type' => $type, 'ids' => $ids] = $group;
+      $this->updateReactiveFields($type, $ids);
     }
   }
 
@@ -158,7 +160,23 @@ class ReactiveField
     }
   }
 
-  public function updateReactiveFields(String $type, String $subtype, array $ids)
+  private function getType()
+  {
+    $context = $this->field->get_context();
+
+    switch ($context) {
+      case 'post_meta':
+        return 'post';
+
+      case 'term_meta':
+        return 'carbon_set_term_meta';
+
+      case 'user_meta':
+        return 'carbon_set_user_meta';
+    }
+  }
+
+  public function updateReactiveFields(String $type, array $ids)
   {
     $name = $this->react_to_name;
     $context = $this->getContextByType($type);
@@ -169,12 +187,12 @@ class ReactiveField
     foreach ($ids as $id) {
       $old_values = call_user_func_array($getter, [$id['value'], $name]);
 
-      $new_values = array_filter($old_values, function ($item) use ($current_id) {
+      $new_values = array_filter($old_values ?? [], function ($item) use ($current_id) {
         return (int) $item['id'] !== (int) $current_id;
       });
 
       if ($id['action'] === 'add') {
-        $new_values = array_merge(['id' => $current_id], $new_values);
+        $new_values = array_merge([['id' => $current_id, 'type' => $this->type, 'subtype' => $this->subtype]], $new_values);
       }
 
       call_user_func_array($setter, [$id['value'], $name, $new_values]);
