@@ -37,6 +37,11 @@ class ReactiveField
     return $this->field->get_base_name();
   }
 
+  public function getId()
+  {
+    return $this->field->get_id();
+  }
+
   private function getContextByType($type)
   {
     switch ($type) {

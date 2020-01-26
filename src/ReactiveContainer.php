@@ -108,33 +108,6 @@ class ReactiveContainer
     return $this->crb_container;
   }
 
-  static private function determineTypeFromHttpRequest()
-  {
-    $post_type = get_post_type();
-    if ($post_type) {
-      return "post/$post_type";
-    }
-
-    $taxonomy = $_POST['taxonomy'] ?? false;
-    if ($taxonomy) {
-      return "term/$taxonomy";
-    }
-
-    if ($_POST['action'] === 'update' || $_POST['action'] === 'createuser') {
-      return 'user';
-    }
-
-
-    return 'comment';
-  }
-
-  private function isActive()
-  {
-    $request_type = Self::determineTypeFromHttpRequest();
-    $type = $this->subtype ? "$this->type/$this->subtype" : $this->type;
-    return $type === $request_type;
-  }
-
   public function addSaveHook(Bool $delete, Field $field)
   {
     $this->updateFieldValueIfNecessary($field);
@@ -144,9 +117,7 @@ class ReactiveContainer
 
   private function updateFieldValueIfNecessary(Field $field)
   {
-    if (!$this->isActive()) return;
-
-    $reactive_field = $this->getFieldByName($field->get_base_name());
+    $reactive_field = $this->getFieldById($field->get_id());
 
     if (!$reactive_field) return;
 
@@ -160,7 +131,7 @@ class ReactiveContainer
 
   public function addField(ReactiveField $field)
   {
-    $this->fields[$field->getName()] = $field;
+    $this->fields[$field->getId()] = $field;
   }
 
   private function getFields()
@@ -168,8 +139,8 @@ class ReactiveContainer
     return $this->fields;
   }
 
-  private function getFieldByName(String $name)
+  private function getFieldById(String $id)
   {
-    return $this->fields[$name] ?? null;
+    return $this->fields[$id] ?? null;
   }
 }
